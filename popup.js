@@ -1,25 +1,32 @@
 function updateTime() {
   const now = new Date();
 
-  // JST (Asia/Tokyo) の時刻（時:分:秒）
+  // JST (日本標準時) の日時（年/月/日 時:分:秒）
   const jstOptions = {
     timeZone: "Asia/Tokyo",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit"
-  };
-  const formattedJST = new Intl.DateTimeFormat("ja-JP", jstOptions).format(now);
-  document.getElementById("timeJST").textContent = formattedJST;
-
-  // UTC の時刻（24時間表記）
-  const utcOptions = {
-    timeZone: "UTC",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
     hour12: false
   };
-  const formattedUTC = new Intl.DateTimeFormat("en-US", utcOptions).format(now);
+  const formattedJST = new Intl.DateTimeFormat("ja-JP", jstOptions).format(now);
+  document.getElementById("timeJST").textContent = formattedJST;
+
+  // UTC (世界標準時) の日時（24時間表記）
+  const utcOptions = {
+    timeZone: "UTC",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false
+  };
+  const formattedUTC = new Intl.DateTimeFormat("ja-JP", utcOptions).format(now);
   document.getElementById("timeUTC").textContent = formattedUTC;
 
   // UnixTime（秒単位）
