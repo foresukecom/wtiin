@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>現在時刻</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <h2>現在時刻</h2>
+  <table>
+    <tr>
+      <th>フォーマット</th>
+      <th>時刻</th>
+    </tr>
+    <tr>
+      <td>JST</td>
+      <td id="timeJST">--:--:--</td>
+    </tr>
+    <tr>
+      <td>UTC</td>
+      <td id="timeUTC">--:--:--</td>
+    </tr>
+    <tr>
+      <td>UnixTime</td>
+      <td id="timeUnix">-----</td>
+    </tr>
+    <tr>
+      <td>令和</td>
+      <td id="timeWareki">--</td>
+    </tr>
+  </table>
+  <script src="popup.js"></script>
+</body>
+</html>

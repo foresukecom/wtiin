@@ -1,0 +1,43 @@
+function updateTime() {
+  const now = new Date();
+
+  // JST (Asia/Tokyo) の時刻（時:分:秒）
+  const jstOptions = {
+    timeZone: "Asia/Tokyo",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  };
+  const formattedJST = new Intl.DateTimeFormat("ja-JP", jstOptions).format(now);
+  document.getElementById("timeJST").textContent = formattedJST;
+
+  // UTC の時刻（24時間表記）
+  const utcOptions = {
+    timeZone: "UTC",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false
+  };
+  const formattedUTC = new Intl.DateTimeFormat("en-US", utcOptions).format(now);
+  document.getElementById("timeUTC").textContent = formattedUTC;
+
+  // UnixTime（秒単位）
+  const unixTime = Math.floor(now.getTime() / 1000);
+  document.getElementById("timeUnix").textContent = unixTime;
+
+  // 和暦：現在が令和何年か
+  // ※ 現在の日付が令和である前提として計算
+  let reiwaYear;
+  if (now.getFullYear() === 2019) {
+    // 2019年は令和元年（※拡張が令和以降で使用される前提）
+    reiwaYear = 1;
+  } else {
+    reiwaYear = now.getFullYear() - 2018;
+  }
+  document.getElementById("timeWareki").textContent = `令和 ${reiwaYear}年`;
+}
+
+// ポップアップ表示時に即時更新し、1秒ごとに自動更新
+updateTime();
+setInterval(updateTime, 1000);
