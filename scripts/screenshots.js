@@ -37,8 +37,8 @@ const shots = [
     highlight: ['timeWareki'],
     part: 'clock',
     eyebrow: '和暦もひと目で',
-    title: '今年は令和何年？<br>にもすぐ答えます。',
-    body: '書類に和暦を書くときも、ボタンひとつ。<br>日本時間で数えるので、年明けもずれません。',
+    title: '書類の日付も、<br>和暦ですぐに。',
+    body: '令和何年何月何日か、曜日まで表示します。<br>日本時間で数えるので、年明けもずれません。',
   },
   {
     file: 'screenshot-4.png',
