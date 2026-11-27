@@ -14,6 +14,12 @@ function dateTimeFormat(timeZone) {
 
 const jstFormat = dateTimeFormat("Asia/Tokyo");
 const utcFormat = dateTimeFormat("UTC");
+// 和暦カレンダーで元号と年を出す。改元や元年の表記もブラウザが扱う
+const warekiFormat = new Intl.DateTimeFormat("ja-JP-u-ca-japanese", {
+  timeZone: "Asia/Tokyo",
+  era: "long",
+  year: "numeric"
+});
 
 function updateTime() {
   const now = new Date();
@@ -26,16 +32,8 @@ function updateTime() {
   const unixTime = Math.floor(now.getTime() / 1000);
   document.getElementById("timeUnix").textContent = unixTime;
 
-  // 和暦：現在が令和何年か
-  // ※ 現在の日付が令和である前提として計算
-  let reiwaYear;
-  if (now.getFullYear() === 2019) {
-    // 2019年は令和元年（※拡張が令和以降で使用される前提）
-    reiwaYear = 1;
-  } else {
-    reiwaYear = now.getFullYear() - 2018;
-  }
-  document.getElementById("timeWareki").textContent = `令和 ${reiwaYear}年`;
+  // 和暦（日本時間で数える）
+  document.getElementById("timeWareki").textContent = warekiFormat.format(now);
 }
 
 // ポップアップ表示時に即時更新し、1秒ごとに自動更新

@@ -4,8 +4,9 @@ const { launchWithExtension } = require('../scripts/extension');
 
 // `just test` が先にビルドした dist/extension/ を読み込む
 const test = base.extend({
-  launched: async ({}, use) => {
-    const launched = await launchWithExtension();
+  // PCのタイムゾーンは test.use({ timezoneId }) で変えられる
+  launched: async ({ timezoneId }, use) => {
+    const launched = await launchWithExtension(timezoneId ? { timezoneId } : {});
     await use(launched);
     await launched.context.close();
   },
