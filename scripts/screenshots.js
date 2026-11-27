@@ -12,35 +12,54 @@ const template = fs.readFileSync(path.join(storeDir, 'slide.html'), 'utf8');
 const SHOT_TIME = new Date('2026-11-27T01:10:00Z');
 
 // highlight: 強調するポップアップの行（tdのid）
+// copy: クリックしてコピーする行（tdのid）、convert: 変換欄に入力する値
+// part: 'clock' は現在時刻の表まで、'convert' は変換欄だけを切り出す
 const shots = [
   {
     file: 'screenshot-1.png',
     highlight: [],
+    part: 'clock',
     eyebrow: 'WHAT TIME IS IT NOW?',
     title: 'いまの時刻を、<br>4つの形式で。',
     body: 'ツールバーのボタンを押すだけで、<br>日本時間・UTC・UnixTime・和暦を<br>まとめて表示します。',
   },
   {
     file: 'screenshot-2.png',
-    highlight: ['timeUTC', 'timeUnix'],
-    eyebrow: '開発や運用のおともに',
-    title: 'ログの時刻と、<br>すぐに照らし合わせ。',
-    body: 'サーバーのログはUTC、APIの値はUnixTime。日本時間と並べて、換算せずに確かめられます。',
+    highlight: ['timeUnix'],
+    copy: 'timeUnix',
+    part: 'clock',
+    eyebrow: 'クリックでコピー',
+    title: '行をクリックすれば、<br>そのまま貼り付け。',
+    body: 'UnixTimeもUTCも、クリックひとつで<br>クリップボードへ。<br>ログの検索やチケットへの記入に。',
   },
   {
     file: 'screenshot-3.png',
     highlight: ['timeWareki'],
+    part: 'clock',
     eyebrow: '和暦もひと目で',
     title: '今年は令和何年？<br>にもすぐ答えます。',
-    body: '書類に和暦を書くときも、ボタンひとつ。日本時間で数えるので、年明けもずれません。',
+    body: '書類に和暦を書くときも、ボタンひとつ。<br>日本時間で数えるので、年明けもずれません。',
+  },
+  {
+    file: 'screenshot-4.png',
+    highlight: [],
+    convert: '1795741800123',
+    part: 'convert',
+    eyebrow: '開発や運用のおともに',
+    title: 'ログの時刻を、<br>貼るだけで変換。',
+    body: 'UnixTime（秒・ミリ秒）や日時を<br>貼り付けると、日本時間・UTC・<br>和暦に変換します。',
   },
 ];
 
 // ポップアップは拡大して載せるため、2倍の解像度で撮っておく
-async function capturePopup(context, extensionId, highlight) {
+async function capturePopup(context, extensionId, shot) {
   const page = await context.newPage();
+  // 撮影でPCのクリップボードを書き換えないよう、コピーは何もしないようにする
+  await page.addInitScript(() => {
+    navigator.clipboard.writeText = async () => {};
+  });
   await page.clock.setFixedTime(SHOT_TIME);
-  await page.setViewportSize({ width: 320, height: 400 });
+  await page.setViewportSize({ width: 320, height: 640 });
   await page.goto(`chrome-extension://${extensionId}/popup.html`);
   await page.evaluate((ids) => {
     for (const id of ids) {
@@ -48,10 +67,22 @@ async function capturePopup(context, extensionId, highlight) {
       row.style.background = '#fff3c4';
       row.style.fontWeight = 'bold';
     }
-  }, highlight);
-  const box = await page.locator('table').boundingBox();
-  const height = Math.ceil(box.y + box.height + 14);
-  const image = await page.screenshot({ clip: { x: 0, y: 0, width: 320, height } });
+  }, shot.highlight);
+  if (shot.copy) {
+    await page.locator(`#${shot.copy}`).click();
+    await page.mouse.move(0, 0);
+  }
+  if (shot.convert) {
+    await page.locator('#convertInput').fill(shot.convert);
+  }
+
+  const [top, bottom] = shot.part === 'convert' ? ['h3', '#convertResult'] : ['h2', '#copyStatus'];
+  const topBox = await page.locator(top).boundingBox();
+  const bottomBox = await page.locator(bottom).boundingBox();
+  // 変換欄は、見出しの上の区切り線を含めない
+  const y = shot.part === 'convert' ? Math.ceil(topBox.y + 2) : Math.max(0, Math.floor(topBox.y - 14));
+  const height = Math.ceil(bottomBox.y + bottomBox.height + 14) - y;
+  const image = await page.screenshot({ clip: { x: 0, y, width: 320, height } });
   await page.close();
   return image.toString('base64');
 }
@@ -72,7 +103,7 @@ async function main() {
   const slidePage = await browser.newPage({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
 
   for (const [index, shot] of shots.entries()) {
-    const popup = await capturePopup(context, extensionId, shot.highlight);
+    const popup = await capturePopup(context, extensionId, shot);
     await slidePage.setContent(renderSlide(shot, index, popup));
     const out = path.join(storeDir, shot.file);
     await slidePage.screenshot({ path: out });
