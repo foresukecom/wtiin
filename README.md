@@ -2,15 +2,15 @@
 
 ## 概要
 
-wtiinは、現在時刻を表示するためのChrome拡張機能です。  
+What Time Is It Now?（wtiin）は、現在時刻を表示するためのChrome拡張機能です。  
 ブラウザツールバーの本拡張機能アイコンをクリックするだけで現在時刻がポップアップで表示されます。
 
 この拡張機能では、以下の4種類の形式で現在時刻を表示します。
 
 - **日本標準時 (JST):** 日本の現地時間で表示します。
 - **世界標準時 (UTC):** 協定世界時で表示します。
-- **UnixTime:** 1970年1月1日からの経過秒数で表示します。
-- **和暦 (令和):** 現在が令和何年かを表示します。
+- **UnixTime:** 1970年1月1日 0時 (UTC) からの経過秒数で表示します。
+- **和暦:** 日本時間で数えた元号と年（例: 令和8年）を表示します。
 
 
 ## 開発環境
@@ -38,6 +38,8 @@ direnv を使う場合は、初回のみ `direnv allow` を実行すると、以
 | `just build` | 配布ファイルを `dist/extension/` にコピー |
 | `just test` | ビルドしてテストを実行 |
 | `just package` | ストア提出用の ZIP を `dist/` に作成 |
+| `just screenshots` | ストア用スクリーンショット（1280x800）を `store/` に作成 |
+| `just icons` | `images/icon-source*.svg` から拡張機能のアイコンを再生成 |
 | `just clean` | 生成物を削除 |
 
 ### Chrome への読み込み
@@ -50,7 +52,11 @@ direnv を使う場合は、初回のみ `direnv allow` を実行すると、以
 
 ## スクリーンショット
 
-<img src="screenshot.png" alt="スクリーンショット" width="400">
+<img src="store/screenshot-1.png" alt="スクリーンショット" width="640">
+
+## クレジット
+
+アイコン（`images/icon-source*.svg` と、そこから生成した `icons/*.png`）はこのリポジトリのために作成したものです。
 
 ## ライセンス
 
