@@ -14,12 +14,23 @@ function dateTimeFormat(timeZone) {
 
 const jstFormat = dateTimeFormat("Asia/Tokyo");
 const utcFormat = dateTimeFormat("UTC");
-// 和暦カレンダーで元号と年を出す。改元や元年の表記もブラウザが扱う
-const warekiFormat = new Intl.DateTimeFormat("ja-JP-u-ca-japanese", {
+// 和暦カレンダーで「令和8年11月27日」のように出す。改元や元年の表記もブラウザが扱う
+const warekiDateFormat = new Intl.DateTimeFormat("ja-JP-u-ca-japanese", {
   timeZone: "Asia/Tokyo",
   era: "long",
-  year: "numeric"
+  year: "numeric",
+  month: "long",
+  day: "numeric"
 });
+const weekdayFormat = new Intl.DateTimeFormat("ja-JP", {
+  timeZone: "Asia/Tokyo",
+  weekday: "short"
+});
+
+// 書類などにそのまま書けるよう、曜日を全角の括弧で付ける。例: 令和8年11月27日（金）
+function formatWareki(date) {
+  return `${warekiDateFormat.format(date)}（${weekdayFormat.format(date)}）`;
+}
 
 // 4つの形式の値を、id が prefix + JST / UTC / Unix / Wareki の要素に表示する
 function showValues(prefix, date) {
@@ -31,7 +42,7 @@ function showValues(prefix, date) {
   document.getElementById(`${prefix}Unix`).textContent = Math.floor(date.getTime() / 1000);
 
   // 和暦（日本時間で数える）
-  document.getElementById(`${prefix}Wareki`).textContent = warekiFormat.format(date);
+  document.getElementById(`${prefix}Wareki`).textContent = formatWareki(date);
 }
 
 function updateTime() {

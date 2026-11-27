@@ -7,7 +7,7 @@ test('現在時刻を4つの形式で表示する', async ({ openPopup }) => {
   await expect(popup.locator('#timeJST')).toHaveText('2026/11/27 10:02:03');
   await expect(popup.locator('#timeUTC')).toHaveText('2026/11/27 01:02:03');
   await expect(popup.locator('#timeUnix')).toHaveText('1795741323');
-  await expect(popup.locator('#timeWareki')).toHaveText('令和8年');
+  await expect(popup.locator('#timeWareki')).toHaveText('令和8年11月27日（金）');
 });
 
 test('表示は1秒ごとに更新される', async ({ openPopup }) => {
@@ -22,23 +22,23 @@ test('表示は1秒ごとに更新される', async ({ openPopup }) => {
 test.describe('和暦', () => {
   test('改元前は平成で表示する', async ({ openPopup }) => {
     const popup = await openPopup(new Date('2019-04-30T03:00:00Z'));
-    await expect(popup.locator('#timeWareki')).toHaveText('平成31年');
+    await expect(popup.locator('#timeWareki')).toHaveText('平成31年4月30日（火）');
   });
 
   test('令和の最初の年は元年と表示する', async ({ openPopup }) => {
     const popup = await openPopup(new Date('2019-05-01T03:00:00Z'));
-    await expect(popup.locator('#timeWareki')).toHaveText('令和元年');
+    await expect(popup.locator('#timeWareki')).toHaveText('令和元年5月1日（水）');
   });
 });
 
 test.describe('PCのタイムゾーンがUTCのとき', () => {
   test.use({ timezoneId: 'UTC' });
 
-  test('和暦の年は日本時間で数える', async ({ openPopup }) => {
+  test('和暦の日付は日本時間で数える', async ({ openPopup }) => {
     // 日本時間では2027年1月1日、UTCではまだ2026年12月31日
     const popup = await openPopup(new Date('2026-12-31T15:00:00Z'));
     await expect(popup.locator('#timeJST')).toHaveText('2027/01/01 00:00:00');
-    await expect(popup.locator('#timeWareki')).toHaveText('令和9年');
+    await expect(popup.locator('#timeWareki')).toHaveText('令和9年1月1日（金）');
   });
 });
 
@@ -73,7 +73,7 @@ test.describe('クリックでコピー', () => {
 
     await popup.getByRole('row', { name: /和暦/ }).focus();
     await popup.keyboard.press('Enter');
-    expect(await copied(popup)).toEqual(['令和8年']);
+    expect(await copied(popup)).toEqual(['令和8年11月27日（金）']);
   });
 });
 
@@ -93,7 +93,7 @@ test.describe('変換', () => {
     await expect(r.jst).toHaveText('2026/11/27 10:10:00');
     await expect(r.utc).toHaveText('2026/11/27 01:10:00');
     await expect(r.unix).toHaveText('1795741800');
-    await expect(r.wareki).toHaveText('令和8年');
+    await expect(r.wareki).toHaveText('令和8年11月27日（金）');
     await expect(popup.locator('#convertNote')).toHaveText('秒の UnixTime として変換しました');
   });
 
