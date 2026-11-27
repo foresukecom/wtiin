@@ -13,7 +13,7 @@ const SHOT_TIME = new Date('2026-11-27T01:10:00Z');
 
 // highlight: 強調するポップアップの行（tdのid）
 // copy: クリックしてコピーする行（tdのid）、convert: 変換欄に入力する値
-// part: 'clock' は現在時刻の表まで、'convert' は変換欄だけを切り出す
+// part: 'clock' は現在時刻の表まで、'convert' は変換欄だけ、'all' はポップアップ全体を切り出す
 const shots = [
   {
     file: 'screenshot-1.png',
@@ -76,7 +76,11 @@ async function capturePopup(context, extensionId, shot) {
     await page.locator('#convertInput').fill(shot.convert);
   }
 
-  const [top, bottom] = shot.part === 'convert' ? ['h3', '#convertResult'] : ['h2', '#copyStatus'];
+  const [top, bottom] = {
+    clock: ['h2', '#copyStatus'],
+    convert: ['h3', '#convertResult'],
+    all: ['h2', '#convertResult'],
+  }[shot.part];
   const topBox = await page.locator(top).boundingBox();
   const bottomBox = await page.locator(bottom).boundingBox();
   // 変換欄は、見出しの上の区切り線を含めない
@@ -109,6 +113,12 @@ async function main() {
     await slidePage.screenshot({ path: out });
     console.log(`${path.relative(process.cwd(), out)} を作成しました`);
   }
+
+  // README に載せる、変換欄まで含めたポップアップ全体の画像
+  const readmeImage = path.join(__dirname, '..', 'images', 'popup.png');
+  const popup = await capturePopup(context, extensionId, { highlight: [], convert: '1795741800123', part: 'all' });
+  fs.writeFileSync(readmeImage, Buffer.from(popup, 'base64'));
+  console.log(`${path.relative(process.cwd(), readmeImage)} を作成しました`);
   await browser.close();
   await context.close();
 }
