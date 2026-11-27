@@ -1,4 +1,4 @@
-# What Time Is It Now ?
+# What Time Is It Now?
 
 ## 概要
 
