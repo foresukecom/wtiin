@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- 16px用の簡略版。カレンダーのマス目とリングを省き、時計を大きく、線を太くしている。針は縮小してもにじまないよう縦と横にしている -->
+  <rect x="5" y="8" width="88" height="92" rx="14" fill="#ffffff" stroke="#9aa6b6" stroke-width="8"/>
+  <path d="M5 22a14 14 0 0 1 14-14h60a14 14 0 0 1 14 14v12H5z" fill="#e5484d"/>
+  <circle cx="84" cy="84" r="36" fill="#ffffff" stroke="#1f5fd1" stroke-width="12"/>
+  <path d="M84 64V84H100" fill="none" stroke="#1b2330" stroke-width="10" stroke-linecap="square"/>
+</svg>
