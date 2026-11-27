@@ -20,6 +20,13 @@ const test = base.extend({
   openPopup: async ({ context, extensionId }, use) => {
     await use(async (time) => {
       const popup = await context.newPage();
+      // テストでPCのクリップボードを書き換えないよう、コピーした値はページ内に記録するだけにする
+      await popup.addInitScript(() => {
+        window.copied = [];
+        navigator.clipboard.writeText = async (text) => {
+          window.copied.push(text);
+        };
+      });
       if (time) {
         await popup.clock.setFixedTime(time);
       }

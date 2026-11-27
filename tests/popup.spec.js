@@ -53,3 +53,26 @@ test('秒が切り替わったらすぐに表示を更新する', async ({ conte
   await popup.clock.runFor(950);
   await expect(popup.locator('#timeUTC')).toHaveText('2026/11/27 01:02:04', { timeout: 500 });
 });
+
+test.describe('クリックでコピー', () => {
+  const copied = (popup) => popup.evaluate(() => window.copied);
+
+  test('行をクリックすると、その時刻をコピーする', async ({ openPopup }) => {
+    const popup = await openPopup(new Date('2026-11-27T01:02:03Z'));
+
+    await popup.getByRole('row', { name: /UnixTime/ }).click();
+    expect(await copied(popup)).toEqual(['1795741323']);
+    await expect(popup.locator('#copyStatus')).toHaveText('UnixTime をコピーしました: 1795741323');
+
+    await popup.getByRole('row', { name: /UTC/ }).click();
+    expect(await copied(popup)).toEqual(['1795741323', '2026/11/27 01:02:03']);
+  });
+
+  test('キーボードの Enter でもコピーできる', async ({ openPopup }) => {
+    const popup = await openPopup(new Date('2026-11-27T01:02:03Z'));
+
+    await popup.getByRole('row', { name: /和暦/ }).focus();
+    await popup.keyboard.press('Enter');
+    expect(await copied(popup)).toEqual(['令和8年']);
+  });
+});

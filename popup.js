@@ -47,3 +47,41 @@ function scheduleUpdate() {
 
 updateTime();
 scheduleUpdate();
+
+// 行をクリック（または Enter / Space）すると、その時刻をクリップボードにコピーする
+const copyStatus = document.getElementById("copyStatus");
+const copyHint = copyStatus.textContent;
+let copyStatusTimer = null;
+
+function showCopyStatus(message, done) {
+  copyStatus.textContent = message;
+  copyStatus.classList.toggle("done", done);
+  clearTimeout(copyStatusTimer);
+  copyStatusTimer = setTimeout(() => {
+    copyStatus.textContent = copyHint;
+    copyStatus.classList.remove("done");
+  }, 2000);
+}
+
+function copyRow(row) {
+  const value = row.lastElementChild.textContent;
+  navigator.clipboard.writeText(value).then(
+    () => showCopyStatus(`${row.dataset.label} をコピーしました: ${value}`, true),
+    () => showCopyStatus("コピーできませんでした", false)
+  );
+}
+
+document.addEventListener("click", (event) => {
+  const row = event.target.closest("tr[data-label]");
+  if (row) {
+    copyRow(row);
+  }
+});
+
+document.addEventListener("keydown", (event) => {
+  const row = event.target.closest("tr[data-label]");
+  if (row && (event.key === "Enter" || event.key === " ")) {
+    event.preventDefault();
+    copyRow(row);
+  }
+});

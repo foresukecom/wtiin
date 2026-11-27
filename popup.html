@@ -12,23 +12,24 @@
       <th>フォーマット</th>
       <th>時刻</th>
     </tr>
-    <tr>
+    <tr data-label="JST" tabindex="0">
       <td>JST</td>
       <td id="timeJST">--:--:--</td>
     </tr>
-    <tr>
+    <tr data-label="UTC" tabindex="0">
       <td>UTC</td>
       <td id="timeUTC">--:--:--</td>
     </tr>
-    <tr>
+    <tr data-label="UnixTime" tabindex="0">
       <td>UnixTime</td>
       <td id="timeUnix">-----</td>
     </tr>
-    <tr>
+    <tr data-label="和暦" tabindex="0">
       <td>和暦</td>
       <td id="timeWareki">--</td>
     </tr>
   </table>
+  <p id="copyStatus" class="status" aria-live="polite">行をクリックすると、時刻をコピーできます</p>
   <script src="popup.js"></script>
 </body>
 </html>
