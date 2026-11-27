@@ -76,3 +76,75 @@ test.describe('クリックでコピー', () => {
     expect(await copied(popup)).toEqual(['令和8年']);
   });
 });
+
+test.describe('変換', () => {
+  const result = (popup) => ({
+    jst: popup.locator('#convJST'),
+    utc: popup.locator('#convUTC'),
+    unix: popup.locator('#convUnix'),
+    wareki: popup.locator('#convWareki'),
+  });
+
+  test('秒の UnixTime を変換する', async ({ openPopup }) => {
+    const popup = await openPopup();
+    await popup.locator('#convertInput').fill('1795741800');
+
+    const r = result(popup);
+    await expect(r.jst).toHaveText('2026/11/27 10:10:00');
+    await expect(r.utc).toHaveText('2026/11/27 01:10:00');
+    await expect(r.unix).toHaveText('1795741800');
+    await expect(r.wareki).toHaveText('令和8年');
+    await expect(popup.locator('#convertNote')).toHaveText('秒の UnixTime として変換しました');
+  });
+
+  test('13桁の UnixTime はミリ秒として変換する', async ({ openPopup }) => {
+    const popup = await openPopup();
+    await popup.locator('#convertInput').fill('1795741800123');
+
+    await expect(result(popup).jst).toHaveText('2026/11/27 10:10:00');
+    await expect(popup.locator('#convertNote')).toHaveText('ミリ秒の UnixTime として変換しました');
+  });
+
+  test('タイムゾーンの指定がない日時は日本時間として変換する', async ({ openPopup }) => {
+    const popup = await openPopup();
+    await popup.locator('#convertInput').fill('2026/11/27 10:10');
+
+    await expect(result(popup).utc).toHaveText('2026/11/27 01:10:00');
+    await expect(result(popup).unix).toHaveText('1795741800');
+  });
+
+  test('タイムゾーンの指定がある ISO 8601 の日時を変換する', async ({ openPopup }) => {
+    const popup = await openPopup();
+    await popup.locator('#convertInput').fill('2026-11-27T01:10:00Z');
+    await expect(result(popup).jst).toHaveText('2026/11/27 10:10:00');
+
+    await popup.locator('#convertInput').fill('2026-11-27T10:10:00+09:00');
+    await expect(result(popup).unix).toHaveText('1795741800');
+  });
+
+  test('変換できない入力では結果を隠して、入力例を示す', async ({ openPopup }) => {
+    const popup = await openPopup();
+    for (const text of ['あした', '2026-02-30', '2026-11-27 25:00']) {
+      await popup.locator('#convertInput').fill(text);
+      await expect(popup.locator('#convertResult')).toBeHidden();
+      await expect(popup.locator('#convertNote')).toHaveText(/変換できませんでした/);
+    }
+  });
+
+  test('変換結果の行もクリックでコピーできる', async ({ openPopup }) => {
+    const popup = await openPopup();
+    await popup.locator('#convertInput').fill('1795741800');
+    await popup.locator('#convertResult').getByRole('row', { name: /JST/ }).click();
+    expect(await popup.evaluate(() => window.copied)).toEqual(['2026/11/27 10:10:00']);
+  });
+});
+
+test.describe('PCのタイムゾーンがUTCのときの変換', () => {
+  test.use({ timezoneId: 'UTC' });
+
+  test('タイムゾーンの指定がない日時は、PCの設定に関係なく日本時間として扱う', async ({ openPopup }) => {
+    const popup = await openPopup();
+    await popup.locator('#convertInput').fill('2026-11-27 10:10');
+    await expect(popup.locator('#convUnix')).toHaveText('1795741800');
+  });
+});

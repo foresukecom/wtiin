@@ -21,19 +21,21 @@ const warekiFormat = new Intl.DateTimeFormat("ja-JP-u-ca-japanese", {
   year: "numeric"
 });
 
-function updateTime() {
-  const now = new Date();
-
+// 4つの形式の値を、id が prefix + JST / UTC / Unix / Wareki の要素に表示する
+function showValues(prefix, date) {
   // JST (日本標準時) と UTC (世界標準時)
-  document.getElementById("timeJST").textContent = jstFormat.format(now);
-  document.getElementById("timeUTC").textContent = utcFormat.format(now);
+  document.getElementById(`${prefix}JST`).textContent = jstFormat.format(date);
+  document.getElementById(`${prefix}UTC`).textContent = utcFormat.format(date);
 
   // UnixTime（秒単位）
-  const unixTime = Math.floor(now.getTime() / 1000);
-  document.getElementById("timeUnix").textContent = unixTime;
+  document.getElementById(`${prefix}Unix`).textContent = Math.floor(date.getTime() / 1000);
 
   // 和暦（日本時間で数える）
-  document.getElementById("timeWareki").textContent = warekiFormat.format(now);
+  document.getElementById(`${prefix}Wareki`).textContent = warekiFormat.format(date);
+}
+
+function updateTime() {
+  showValues("time", new Date());
 }
 
 // ポップアップ表示時に即時更新し、以降は秒が切り替わるたびに更新する。
@@ -85,3 +87,68 @@ document.addEventListener("keydown", (event) => {
     copyRow(row);
   }
 });
+
+// 入力された UnixTime や日時を、4つの形式に変換する
+const convertInput = document.getElementById("convertInput");
+const convertNote = document.getElementById("convertNote");
+const convertResult = document.getElementById("convertResult");
+const convertHint = convertNote.textContent;
+
+// UnixTime がこの値以上ならミリ秒とみなす（秒だとすると西暦5138年になる）
+const MILLISECONDS_THRESHOLD = 1e11;
+const UNIX_TIME_PATTERN = /^-?\d+$/;
+// タイムゾーンの指定がない日時。2026-11-27 10:10、2026/11/27 など
+const LOCAL_DATE_TIME_PATTERN = /^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?$/;
+// タイムゾーンの指定がある ISO 8601 の日時。2026-11-27T01:10:00Z、2026-11-27T10:10:00+09:00 など
+const ISO_DATE_TIME_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})$/i;
+
+// 変換できたら { date, note } を、できなければ null を返す
+function parseInput(text) {
+  if (UNIX_TIME_PATTERN.test(text)) {
+    const value = Number(text);
+    if (Math.abs(value) >= MILLISECONDS_THRESHOLD) {
+      return { date: new Date(value), note: "ミリ秒の UnixTime として変換しました" };
+    }
+    return { date: new Date(value * 1000), note: "秒の UnixTime として変換しました" };
+  }
+
+  const local = text.match(LOCAL_DATE_TIME_PATTERN);
+  if (local) {
+    const [year, month, day, hour = 0, minute = 0, second = 0] = local.slice(1).map((part) => Number(part || 0));
+    // 日本時間として扱う。2月30日などの存在しない日時は、組み立て直して一致しなければ無効にする
+    const date = new Date(Date.UTC(year, month - 1, day, hour - 9, minute, second));
+    const jst = new Date(date.getTime() + 9 * 3600 * 1000);
+    const valid = jst.getUTCFullYear() === year && jst.getUTCMonth() === month - 1 && jst.getUTCDate() === day &&
+      jst.getUTCHours() === hour && jst.getUTCMinutes() === minute && jst.getUTCSeconds() === second;
+    return valid ? { date, note: "タイムゾーンの指定がないため、日本時間として変換しました" } : null;
+  }
+
+  if (ISO_DATE_TIME_PATTERN.test(text)) {
+    return { date: new Date(text), note: "日時を変換しました" };
+  }
+  return null;
+}
+
+function convert() {
+  const text = convertInput.value.trim();
+  convertNote.classList.remove("error");
+  if (!text) {
+    convertNote.textContent = convertHint;
+    convertResult.hidden = true;
+    return;
+  }
+
+  const parsed = parseInput(text);
+  if (!parsed || Number.isNaN(parsed.date.getTime())) {
+    convertNote.textContent = "変換できませんでした。UnixTime か、2026-11-27 10:10 のような日時を入力してください";
+    convertNote.classList.add("error");
+    convertResult.hidden = true;
+    return;
+  }
+
+  showValues("conv", parsed.date);
+  convertNote.textContent = parsed.note;
+  convertResult.hidden = false;
+}
+
+convertInput.addEventListener("input", convert);
