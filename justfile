@@ -2,7 +2,7 @@
 # ツールは devShell（nix develop / direnv）に入っている前提
 
 # 拡張機能として配布するファイル・ディレクトリ
-extension_files := "manifest.json popup.html popup.js popup.css clock.png"
+extension_files := "manifest.json popup.html popup.js popup.css icons"
 
 # レシピ一覧
 default:
@@ -34,6 +34,10 @@ package: build
     # -X: macOSの拡張属性などを含めない
     (cd dist/extension && zip -r -X "$zip_path" .)
     echo "dist/wtiin-${version}.zip を作成しました"
+
+# images/icon-source*.svg から icons/ の拡張機能アイコンを再生成する
+icons:
+    ./scripts/generate-icons.sh
 
 # 生成物を削除する
 clean:
