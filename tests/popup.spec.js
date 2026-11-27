@@ -41,3 +41,15 @@ test.describe('PCのタイムゾーンがUTCのとき', () => {
     await expect(popup.locator('#timeWareki')).toHaveText('令和9年');
   });
 });
+
+test('秒が切り替わったらすぐに表示を更新する', async ({ context, extensionId }) => {
+  const popup = await context.newPage();
+  // 秒の切り替わりの 0.9 秒前に開き、切り替わりの直後（0.95 秒後）まで進める
+  // 実時間の経過で時計が進まないよう、止めた状態で開く
+  await popup.clock.install({ time: new Date('2026-11-27T01:02:03.000Z') });
+  await popup.clock.pauseAt(new Date('2026-11-27T01:02:03.100Z'));
+  await popup.goto(`chrome-extension://${extensionId}/popup.html`);
+  await expect(popup.locator('#timeUTC')).toHaveText('2026/11/27 01:02:03');
+  await popup.clock.runFor(950);
+  await expect(popup.locator('#timeUTC')).toHaveText('2026/11/27 01:02:04', { timeout: 500 });
+});

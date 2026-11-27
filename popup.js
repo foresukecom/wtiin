@@ -36,6 +36,14 @@ function updateTime() {
   document.getElementById("timeWareki").textContent = warekiFormat.format(now);
 }
 
-// ポップアップ表示時に即時更新し、1秒ごとに自動更新
+// ポップアップ表示時に即時更新し、以降は秒が切り替わるたびに更新する。
+// 開いた時刻を起点に1秒ごとに更新すると、表示が最大1秒近く遅れるため
+function scheduleUpdate() {
+  setTimeout(() => {
+    updateTime();
+    scheduleUpdate();
+  }, 1000 - (Date.now() % 1000));
+}
+
 updateTime();
-setInterval(updateTime, 1000);
+scheduleUpdate();
